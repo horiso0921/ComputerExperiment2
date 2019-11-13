@@ -66,11 +66,11 @@
 // 1111,           lui
 
 // 実験 9 のヒント（３）：コメントの追加(2)
-// mult(multiply)
-// mflo(move from Lo)
+// 1011,           mult
+// 1100,           mflo  
 
-// divi(division)
-// mfhi(move from Hi)
+// 0101,           divi
+// 1101,           mfhi
 
 // ALU 制御コード
 `define     ALU_ADD  4'b0010
