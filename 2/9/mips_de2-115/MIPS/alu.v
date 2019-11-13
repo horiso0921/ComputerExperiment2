@@ -61,8 +61,8 @@
 // 1111,           lui
 
 // 実験 9 のヒント（３）：コメントの追加(2)
-// mult(multiply)
-// mflo(move from Lo)
+// 1011,           mult
+// 1100,           mflo
 
 
 // ALU 制御コード
