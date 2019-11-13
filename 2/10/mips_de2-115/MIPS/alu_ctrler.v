@@ -134,9 +134,9 @@ module alu_ctrler (alu_op, func, alu_ctrl);  // 入出力ポート
           y = `ALU_CTRL_MULT;
         end else if (func == 6'b010010) begin // func=MFLO
           y = `ALU_CTRL_MFLO;
-        end else if (func == 6'b011011) begin // func=MULT
+        end else if (func == 6'b011011) begin // func=DIVU
           y = `ALU_CTRL_DIVU;
-        end else if (func == 6'b010000) begin // func=MFLO
+        end else if (func == 6'b010000) begin // func=MFHI
           y = `ALU_CTRL_MFHI;
         end else begin
           y = 3'b000;
