@@ -1,0 +1,64 @@
+m255
+K3
+13
+cModel Technology
+Z0 d/mdhome/home5/nw0397095/ComputerExperiment2/bcd
+vbcd1
+!i10b 1
+Z1 !s100 URcYo>eMFMP5LB1NR_Njb2
+Z2 IDeAR:@]O4TVBAG`P7:ni?2
+Z3 VF>LDE_55UzDmn^D:2a:oa3
+Z4 d/mdhome/home5/nw0397095/ComputerExperiment2/bcd
+Z5 w1570687720
+Z6 Fbcd1.v
+Z7 8test_bcd2.v
+Z8 Ftest_bcd2.v
+L0 5
+Z9 OV;L;10.1d;51
+r1
+!s85 0
+31
+Z10 !s108 1571836425.153089
+Z11 !s107 bcd1.v|bcd2.v|test_bcd2.v|
+Z12 !s90 -reportprogress|300|test_bcd2.v|
+!s101 -O0
+o-O0
+vbcd2
+!i10b 1
+!s100 eREHhla`;Y;Pc>WT0e4Oo2
+IkldL<4gI[jb7A=ON[TTnY2
+Z13 V6aK^JFfU?Pc@?lVDczNib0
+R4
+w1571836401
+Z14 Fbcd2.v
+R7
+R8
+L0 7
+R9
+r1
+!s85 0
+31
+R10
+R11
+R12
+!s101 -O0
+o-O0
+vtest
+!i10b 1
+Z15 !s100 HYKkK8B9dBl2>gJRLIW6O2
+Z16 In[coeE=?nSo351<1:;hDJ1
+Z17 Vk<3<[f=78GX=_HO53D;7>3
+R4
+Z18 w1570115755
+R7
+R8
+L0 10
+R9
+r1
+!s85 0
+31
+R10
+R11
+R12
+!s101 -O0
+o-O0

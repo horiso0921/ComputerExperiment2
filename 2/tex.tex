@@ -1,0 +1,797 @@
+\documentclass[epsf,a4paper,dvipdfmx,autodetect-engine,titlepage]{jsarticle}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{tikz}
+\makeatletter
+\usepackage{here,ascmac}
+\newcommand{\subsubsubsection}
+{\@startsection{paragraph}{4}{\z@}%
+{1.0\Cvs \@plus.5\Cdp \@minus.2\Cdp}%
+{.1\Cvs \@plus.3\Cdp}%
+{\reset@font\sffamily\normalsize}}
+\usepackage{url}
+\usepackage{minted}
+\usepackage{listings}
+\setcounter{secnumdepth}{3}
+\usepackage[dvipdfmx]{hyperref}
+\lstset{
+    %プログラム言語(複数の言語に対応，C,C++も可)
+    language = Verilog,
+    %背景色と透過度
+    %backgroundcolor={\color[gray]{.90}},
+    %枠外に行った時の自動改行
+    breaklines = true,
+    %自動開業後のインデント量(デフォルトでは20[pt])	
+    breakindent = 10pt,
+    %標準の書体
+    basicstyle = \scriptsize\ttfamily,
+    %コメントの書体
+    commentstyle = \scriptsize,
+    %関数名等の色の設定
+    %classoffset = 2,
+    %キーワード(int, ifなど)の書体
+    %keywordstyle = \scriptsize\ttfamily,
+    %""で囲まれたなどの"文字"の書体
+    %stringstyle = \scriptsize\ttfamily,
+    %枠 "t"は上に線を記載, "T"は上に二重線を記載
+    %他オプション：leftline，topline，bottomline，lines，single，shadowbox
+    frame = TBRL,
+    %frameまでの間隔(行番号とプログラムの間)
+    framesep = 6pt,
+    %行番号の位置
+    numbers = left,
+    %行番号の間隔
+    stepnumber = 1,
+    %右マージン
+    %xrightmargin=0zw,
+    %左マージン
+    %xleftmargin=3zw,
+    %行番号の書体
+    numberstyle = \tiny,
+    %タブの大きさ
+    tabsize = 8,
+    %キャプションの場所("tb"ならば上下両方に記載)
+    captionpos = t
+}
+\renewcommand{\lstlistingname}{ソースコード}
+%
+%\begin{screen}
+%\end{screen}
+%
+\title{シングルサイクル RISC プロセッサの設計}
+\author{名古屋大学情報学部コンピュータ科学科3年\\堀内颯太 ( 学籍番号 : 101730331 )\\horiuchi.sota@e.mbox.nagoya-u.ac.jp}
+\date{実験日 2019 / 10 / 24, 31, 11 / 7, 14, 21}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+\section{はじめに}
+本実験では, 標準的なシングルサイクル RISCプロセッサの設計を行う. 実験を通して. プロセッサの命令セット・アーキテクチャとその実現方式についての理解を深める. また, 命令実行中のプロセッサの内部状態を観察することにより, C 言語プログラム中のループや条件分岐, 関数呼び出しが, プロセッサの命令実行レベルでどのように処理されるのかについての理解を深める.本実験では未完成なプロセッサに対して機能を追加し, 繰返し処理，分岐処理，関数呼出し，ポインタ，配列，符号なし整数の加減算ができるプロセッサを完成させる．繰返し処理，分岐処理，関数呼出し，ポインタ，配列，符号なし整数の加減乗除算ができるプロセッサを完成させる\par
+RISC とはReduced Instruction Set Computerのことであり, 命令セット・アーキテクチャを実現するCPUアーキテクチャのことである. 命令セットのアーキテクチャの実現方式は, 必要な少数の命令語だけを使用して 1 クロックのクロックで実行できるようにする方式とる．RISC チップは複雑な命令語を除去して命令語の実効速度を増加させるため,  実効速度が早いというメリットがある.\par
+本実験では, プロセッサに対して, まず即値符号なし整数加算命令，ストア・ワード命令を正しく実行できるようにする（実験 1-1，1-2）次に,ジャンプ命令を正しく実行できるようにさせ（実験 2-1，2-2）, 即値符号なし・セット・オン・レス・ザン命令，ブランチ・ノット・イコール命
+令，ロード・ワード命令を正しく実行できるようにする（実験 4-1，4-2）. その後, ジャンプ・アンド・リンク命令を正しく実行できるようにし（実験 5-1，5-2）, ジャンプ・レジスタ命令を正しく実行できるようにする（実験 6-1，6-2）. また, 実験9で整数乗算命令 ならびにムーブ・フロム・Lo 命令を, 実験10 で符号なし除算命令ならびにムーブ・フロム・Hi 命令を正しく実行できるようにする. 
+プロセッサ以外に対しては実験3でクロスコンパイラを使用し, 実験7で文字列をディスプレイに出力する my print() 関数と，キーボードからの入力を受
+け付ける my scan() 関数を使用して，素数計算プログラムを作成する. 実験8ではステッピングモータ制御プログラムを作成する.
+
+\subsection{実験器具}
+本実験で使用した実験器具及びソフトウエア構成は以下の通りである。
+\begin{itemize}
+    \item ModelSim Altera Starter Edition 10.1d (実験1でのみ使用)
+    \item Quartus II 13.0sp1
+    \item DE2-115 ボード (ltera 社の FPGA（Altera Cyclone IV E）)図\ref{fig:fpga}
+\end{itemize}
+\begin{figure}
+    \centering
+    \includegraphics[width= 15cm]{fpga.jpg}
+    \caption{使用したFPGAのスイッチ及びLED}
+    \label{fig:fpga}
+\end{figure}
+\subsection{環境設定}
+以下のコマンドを端末で実行し, 本実験で使用する EDA ツールを，Linux マシンで利用するための設定を行うため, pub1/jikken/eda3 以下にインストールされている設定ファイルcadsetup.bash.alteraを読み込んだ. 
+\begin{screen}
+ln -s /pub1/jikken/eda3/cadsetup.bash.altera \~{}/　\\
+source \~{}/cadsetup.bash.altera
+\end{screen}
+\subsection{未完成なプロセッサの概要}
+実験の最初に使用する未完成なプロセッサは, 8 個の命令と，2 個のハードウェアモジュールが未実装の状態である．実装済の命令と未実装の命令は，以下の通りである．
+\begin{description}
+    \item[] 実相済みの命令\par
+    \begin{itemize}
+        \item R形式の命令: ADD, ADDU, SUB, SUBU, AND, OR, NOR, XOR, SLL, SRL, SLLV, SRLV, SRA, SLTU, JALR, SLR
+        \item I 形式の命令：ADDI, ANDI, ORI, XORI, BEQ, BGEZ, BLEZ, BGTZ, BLTZ, BGEZAL, BLTZAL, SLTI, LUI
+    \end{itemize}
+    \item[] 未実装の命令\par
+    \begin{itemize}
+        \item R 形式の命令：JR, MULT, MFLO, DIVU, MFHI
+        \item I 形式の命令：LW, SW, ADDIU, BNE, SLTIU
+        \item J 形式の命令：J, JAL
+    \end{itemize}
+\end{description}
+
+\section{実験1: addiu命令とsw命令の追加}
+\subsection{実験1-1: マシン・コードの動作実験}
+\subsubsection{目的・概要}
+本実験では, 即値符号なし整数加算命令（add immediate unsigned：addiu）とストア・ワード命令（store word：sw）が未実装なプロセッサにおいて,それらの命令を含んだ,ディスプレイに文字’B’ を一つ表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを観察する.
+\subsubsection{実験手順}
+\subsubsubsection{メモリイメージファイルの作成}
+次のコマンドを入力し, 予め用意したMIPSマシン・コードをプロセッサの命令メモリのメモリ・イメージファイルに変換した.
+\begin{screen}
+bin2v print\_B.bin
+\end{screen}
+これにより quartusIIで論理合成可能なメモリ・イメージファイル(rom8x1024\_sim.v, rom8x1024\_DE2.mif)を得た. 
+\subsubsubsection{命令メモリに格納される命令列の確認及び予想}
+次に, bin2vにより生成されたメモリイメージファイルを使用し, プロセッサの命令メモリに格納される命令列を確認した. ソースコード\ref{sec1-1rom}はrom8x1024 sim.v の一部である. これを解析し, 以下の問いを立てた. 
+\begin{enumerate}
+    \item プロセッサが PC=0x002c の命令を実行することにより，レジスタ REG[2] の値がいくらになるか.
+    \item プロセッサが PC=0x0030 の命令を実行することにより，RAM の 768 (0x00000300)番地の値がいくらになるか．
+    \item プロセッサが PC=0x0034 番地の命令を実行することにより，REG[3] の値いくらになるか．
+    \item プロセッサが PC=0x003c の命令を実行すると，RAM の何番地の値が変化し，変化後の値はいくらか．
+    \item プロセッサが PC=0x0048 の命令を実行すると，RAM の何番地の値が変化し，変化前，変化後の値はそれぞれいくらか.
+\end{enumerate}
+\begin{lstlisting}[caption=実験1で生成されたrom8x1024\_sim.v,label=sec1-1rom]
+<Omission>
+case (word_addr)
+    <Omission>
+    10’h00b: data = 32’h24020300; // 0040002c: ADDIU, REG[2]<=REG[0]+768(=0x00000300);
+    10’h00c: data = 32’hac400000; // 00400030: SW, RAM[REG[2]+0]<=REG[0];
+    10’h00d: data = 32’h24030304; // 00400034: ADDIU, REG[3]<=REG[0]+772(=0x00000304);
+    10’h00e: data = 32’h24020002; // 00400038: ADDIU, REG[2]<=REG[0]+2(=0x00000002);
+    10’h00f: data = 32’hac620000; // 0040003c: SW, RAM[REG[3]+0]<=REG[2];
+    10’h010: data = 32’h24030300; // 00400040: ADDIU, REG[3]<=REG[0]+768(=0x00000300);
+    10’h011: data = 32’h24020001; // 00400044: ADDIU, REG[2]<=REG[0]+1(=0x00000001);
+    10’h012: data = 32’hac620000; // 00400048: SW, RAM[REG[3]+0]<=REG[2];
+    <Omission>
+endcase
+<Omission>
+\end{lstlisting}
+\subsubsubsection{論理合成}
+以下のコマンドを入力し, mips\_de2-115.tar.gzを展開した.
+\begin{screen}
+tar xvfz ./mips\_de2-115.tar.gz
+\end{screen}
+これにより, プロセッサのソース一式を得た.\par
+次に, メモリ・イメージファイルrom8x1024\_DE2.mifをディレクトリmips\_de2-115にコピーし, ディレクトリmips\_de2-115で以下のコマンドを入力して論理合成を行った.
+\begin{screen}
+quartus\_sh --flow compile DE2\_115\_Default
+\end{screen}
+これにより,  FPGA にダウンロード可能なプロセッサなど回路一式のChannel Definition Format DE2 115 Default.cdf を得た.
+\subsubsubsection{FPGAを用いた回路実現}
+次に, FPGAをコンピュータに接続し, 端末に以下のように入力した.
+\begin{screen}
+dmesg \\
+quartus\_pmg DE2\_115\_Default.cdf
+\end{screen}
+1行目によって FPGA の接続を確認し，2行目によって FPGA にダウンロードを行った．
+その後, DE2-115 ボード上のKEY3を数回押してプロセッサにクロックパルスを送りプロセッサにPC=0x0048までの命令を実行させ, ディスプレイ下部に文字Bが1つ表示されるか確認した. 
+\subsubsection{実験予想}
+\begin{enumerate}
+    \item プロセッサが PC=0x002c の命令を実行することにより，レジスタ REG[2] の値がいくらになるか\par
+    REG[0]+768が実行されるはずである．今REG[0]はそれまでの動作で0が代入されているので, REG[2]は768になると予想される.
+
+    \item プロセッサが PC=0x0030 の命令を実行することにより，RAM の 768 (0x00000300)番地の値がいくらになるか\par
+    REG[2]の値は768であるのでRAM[768]にはREG[0]の値が代入される, つまり0になると予想される.
+
+    \item プロセッサが PC=0x0034 番地の命令を実行することにより，REG[3] の値いくらになるか．\par
+    REG[0]+772が実行されるはずである．今REG[0]はそれまでの動作で0が代入されているので, REG[3]は772になると予想される.
+
+    \item プロセッサが PC=0x003c の命令を実行すると，RAM の何番地の値が変化し，変化後の値はいくらか.\par
+    REG[2]の値はその上のPC=0x0038の命令の実行で, 2になるのでREG[3]が772であるからRAM[REG[3]+0]つまりRAM[772]にREG[2]の値が代入される, つまり772番地が2になると予想される.
+
+    \item プロセッサが PC=0x0048 の命令を実行すると，RAM の何番地の値が変化し，変化前，変化後の値はそれぞれいくらか.\par
+    PC=0x0040の命令を実行するとREG[3]は768, PC=0x0044の命令を実行するとREG[2]は1になる, そのため, RAMの768番地には今0であり, 変化後は1になると予想される. 
+\end{enumerate}
+\subsubsection{実験結果}
+\subsubsection{考察}
+
+\subsection{実験1-2: プロセッサの追加設計}
+本実験では, 即値符号なし整数加算命令（add immediate unsigned：addiu）とストア・ワード命令（store word：sw）が未実装なプロセッサにおいて,これらを追加設計し, ディスプレイに文字’B’ を一つ表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを確認する.
+\subsubsection{実験手順}
+\subsubsubsection{main\_ctrl.vの変更}
+プロセッサのmain\_ctrl.vに以下の変更を加えることで, addiuとsw命令の追加を行った.
+\begin{itemize}
+    \item addiu命令の変更
+\begin{enumerate}
+    \item 33行目, 記述「`define  ADDIU  6'b001100」を「`define  ADDIU  6'b001001」に変更した. これにより, addiuの正しい命令コードの定義を変更した.
+    
+    \item 330行目, 記述「`ADDIU:  is\_branch\_ctrl\_tmp = 3'bXXX;を「`ADDIU:  is\_branch\_ctrl\_tmp = 3'b110;」に変更した．これにより, is\_branch モジュールへの制御信号の記述を変更した.
+    
+    \item 435行目, 記述「`ADDIU:  alu\_b\_sel1\_s\_tmp = 1'bX;」を「`ADDIU:  alu\_b\_sel1\_s\_tmp = 1'b1;」に変更した. これにより, ALU の入力ポート B へ流すデータを選択するセレクト信号の記述を変更した.
+    
+    \item 481行目, 記述「(op\_code == `ADDIU) \&\& 0」を「(op\_code == `ADDIU) \&\& 1」に変更した. これにより, 符号拡張を行う制御信号の記述を変更した.
+    
+    \item 536行目, 記述「`ADDIU:  alu\_op\_tmp = 3'bXXX;を「`ADDIU:  alu\_op\_tmp = 3'b000;」に変更した. これにより, 加算を行う制御信号の記述を変更した. 
+    
+    \item 539行目, 記述「`ADDIU:  reg\_write\_enable\_tmp = 1'bX;」を「`ADDIU:  reg\_write\_enable\_tmp = 1'b1;」に変更した. これにより, レジスタファイルへの制御信号の記述を変更した.
+    
+    \item 664行目, 記述「`ADDIU:  alu\_ram\_sel\_s\_tmp = 1'bX;」を「`ADDIU:  alu\_ram\_sel\_s\_tmp = 1'b0;」に変更した. これにより, レジスタファイルの方へ流すデータを選択するセレクト信号の記述を変更した.
+    
+    \item 707行目, 記述「`ADDIU:  reg\_widx\_sel1\_s\_tmp = 1'bX;」を「`ADDIU:  reg\_widx\_sel1\_s\_tmp = 1'b0」に変更した. これにより, レジスタファイルの write\_idx へ流すデータを選択するセレクト信号の記述を変更した.
+    
+    \item 756行目, 記述「`ADDIU:  link\_tmp = 1'bX;」を「`ADDIU:  link\_tmp = 1'b0;」に変更した. これにより, レジスタファイルの write\_idx へ流すデータを選択するセレクト信号の記述を変更した.
+\end{enumerate}
+    \item sw命令の変更
+\begin{enumerate}
+    \item 42行目, 記述「`define     SW  6'b101100 」を「`define     SW  6'b101011」に変更した. これにより, swの正しい命令コードの定義を変更した.
+    
+    \item 292行目, 記述「assign  ram\_write\_enable = ((op\_code == `SW) \&\& 0) ? 1'b1 : 1'b0;」を「assign  ram\_write\_enable = ((op\_code == `SW) \&\& 1) ? 1'b1 : 1'b0;」に変更した. これにより, RAM への制御信号の記述を変更した.
+    
+    \item 323行目, 記述「`SW:     is\_branch\_ctrl\_tmp = 3'bXXX;を「`SW:     is\_branch\_ctrl\_tmp = 3'b110;」に変更した. これにより, is\_branch モジュールへの制御信号の記述を変更した.    
+    
+    \item 427行目, 記述「`SW:     alu\_b\_sel1\_s\_tmp = 1'bX;」を「`SW:     alu\_b\_sel1\_s\_tmp = 1'b1;」に変更した. これにより, ALU の入力ポート B へ流すデータを選択するセレクト信号の記述を変更した.
+    
+    \item 485行目, 記述「((op\_code == `SW) \&\& 0)」を「((op\_code == `SW) \&\& 1)」に変更した. これにより, 符号拡張を行う制御信号の記述を変更した.
+    
+    \item 528行目, 記述「`SW:     alu\_op\_tmp = 3'bXXX;を「`SW:     alu\_op\_tmp = 3'b000;」に変更した. これにより, 加算を行う制御信号の記述を変更した.
+    
+    \item 記述「`SW:     reg\_write\_enable\_tmp = 1'bX;」を「`SW:     reg\_write\_enable\_tmp = 1'b0;」に変更した．これにより, レジスタファイルへの制御信号の記述を変更した.
+\end{enumerate}
+\end{itemize}
+\subsubsubsection{論理合成}
+次に, 変更を加えたmain\_ctrl.vをディレクトリmips\_de2-115/MIPSに置き, ディレクトリmips\_de2-115で以下のコマンドを入力して論理合成を行った.
+\begin{screen}
+quartus\_sh --flow compile DE2\_115\_Default
+\end{screen}
+これにより,  FPGA にダウンロード可能なプロ
+セッサなど回路一式のChannel Definition Format DE2 115 Default.cdf を得た.
+\subsubsubsection{FPGAを用いた回路実現}
+次に, FPGAをコンピュータに接続し, 端末に以下のように入力した.
+\begin{screen}
+dmesg \\
+quartus\_pmg DE2\_115\_Default.cdf
+\end{screen}
+1行目によって FPGA の接続を確認し，2行目によって FPGA にダウンロードを行った．
+その後, DE2-115 ボード上のKEY3を数回押してプロセッサにクロックパルスを送りプロセッサにPC=0x0048までの命令を実行させ, ディスプレイ下部に文字Bが1つ表示されるか確認した.
+\subsubsection{実験結果}
+\subsubsection{考察}
+
+\section{実験2: j命令の追加}
+\subsection{実験2-1: マシン・コードの動作実験}
+\subsubsection{目的・概要}
+本実験では, プロセッサのジャンプ命令（jump：j）が未実装なプロセッサにおいて, それらの命令を含んだ,ディスプレイに文字’B’ を繰り返し表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを観察する.
+\subsubsection{実験手順}
+\subsubsubsection{メモリイメージファイルの作成}
+次のコマンドを入力し, MIPSマシン・コードをプロセッサの命令メモリのメモリ・イメージファイルに変換した.
+\begin{screen}
+bin2v print\_B\_while.bin
+\end{screen}
+これにより quartusIIで論理合成可能なメモリ・イメージファイル(rom8x1024\_sim.v, rom8x1024\_DE2.mif)を得た. 
+\subsubsubsection{命令メモリに格納される命令列の確認及び予想}
+次に, bin2vにより生成されたメモリイメージファイルを使用し, プロセッサの命令メモリに格納される命令列を確認した. ソースコード\ref{sec2-1rom}はrom8x1024 sim.v の一部である. これを解析し, 以下の問いを立てた. 
+\begin{enumerate}
+    \item プロセッサが PC=0x004c の命令を実行することにより，PC に格納される値と，それが表す命令メモリの番地はなにか．
+\end{enumerate}
+\begin{lstlisting}[caption=実験2で生成されたrom8x1024\_sim.v,label=sec2-1rom]
+<Omission>
+case (word_addr)
+    <Omission>
+    10’h00b: data = 32’h24020300; // 0040002c: ADDIU, REG[2]<=REG[0]+768(=0x00000300);
+    10’h00c: data = 32’hac400000; // 00400030: SW, RAM[REG[2]+0]<=REG[0];
+    10’h00d: data = 32’h24030304; // 00400034: ADDIU, REG[3]<=REG[0]+772(=0x00000304);
+    10’h00e: data = 32’h24020002; // 00400038: ADDIU, REG[2]<=REG[0]+2(=0x00000002);
+    10’h00f: data = 32’hac620000; // 0040003c: SW, RAM[REG[3]+0]<=REG[2];
+    10’h010: data = 32’h24030300; // 00400040: ADDIU, REG[3]<=REG[0]+768(=0x00000300);
+    10’h011: data = 32’h24020001; // 00400044: ADDIU, REG[2]<=REG[0]+1(=0x00000001);
+    10’h012: data = 32’hac620000; // 00400048: SW, RAM[REG[3]+0]<=REG[2];
+    10’h013: data = 32’h0810000b; // 0040004c: J, PC<=0x0010000b*4(=0x0040002c);
+    <Omission>
+endcase
+<Omission>
+\end{lstlisting}
+\subsubsubsection{論理合成}
+次に, メモリ・イメージファイルrom8x1024\_DE2.mifをディレクトリmips\_de2-115にコピーし, ディレクトリmips\_de2-115で以下のコマンドを入力して論理合成を行った.
+\begin{screen}
+quartus\_sh --flow compile DE2\_115\_Default
+\end{screen}
+これにより,  FPGA にダウンロード可能なプロセッサなど回路一式のChannel Definition Format DE2 115 Default.cdf を得た.
+\subsubsubsection{FPGAを用いた回路実現}
+次に, FPGAをコンピュータに接続し, 端末に以下のように入力した.
+\begin{screen}
+dmesg \\
+quartus\_pmg DE2\_115\_Default.cdf
+\end{screen}
+1行目によって FPGA の接続を確認し，2行目によって FPGA にダウンロードを行った. その後, DE2-115 ボード上のKEY3を十数回押してプロセッサにクロックパルスを送り ディスプレイ下部に文字Bが繰り返し表示されるか確認した. 
+\subsubsection{実験予想}
+\begin{enumerate}
+    \item プロセッサが PC=0x004c の命令を実行することにより，PC に格納される値と，それが表す命令メモリの番地はなにか \par
+    PC=0x040002cがセットされる. これは命令メモリの番地0x00bを表している.
+\end{enumerate}
+\subsubsection{実験結果}
+\subsubsection{考察}
+
+\subsection{実験2-2: プロセッサの追加設計}
+本実験では,プロセッサのジャンプ命令（jump：j）が未実装なプロセッサにおいて, これらを追加設計し, ディスプレイに文字’B’ を繰り返し表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを確認する.
+\subsubsection{実験手順}
+\subsubsubsection{cpu.vの変更}
+プロセッサのcpu.vに以下の変更を加えることで, j命令の追加を行った.
+\begin{itemize}
+    \item j命令の変更
+\begin{enumerate}
+    \item 262行目から265行目, 記述「 \\ 
+  //wire  [31:0]     jp\_sel\_d0;  // jp 選択回路モジュール データ 1\\
+  //wire  [31:0]     jp\_sel\_d1;  // jp 選択回路モジュール データ 2\\
+  //wire              jp\_sel\_s;  // jp 選択回路モジュール セレクト信号\\
+  //wire  [31:0]      jp\_sel\_y;  // jp 選択回路モジュール 出力\\」を「 \\ 
+  wire  [31:0]     jp\_sel\_d0;  // jp 選択回路モジュール データ 1\\
+  wire  [31:0]     jp\_sel\_d1;  // jp 選択回路モジュール データ 2\\
+  wire              jp\_sel\_s;  // jp 選択回路モジュール セレクト信号\\
+  wire  [31:0]      jp\_sel\_y;  // jp 選択回路モジュール 出力\\」に変更した．これにより, セレクトモジュールに必要なワイヤを宣言を行った．
+
+    \item 409行目, 記述「//mux32\_32\_32  jp\_sel(jp\_sel\_d0, jp\_sel\_d1, jp\_sel\_s, jp\_sel\_y);」を「mux32\_32\_32  jp\_sel(jp\_sel\_d0, jp\_sel\_d1, jp\_sel\_s, jp\_sel\_y);」に変更した. これによりjp\_selのセレクタを実体化した.
+
+    \item 490,491行目, 記述「\\
+  //  assign pc\_next = jp\_sel\_y;\\
+    assign pc\_next = pc\_sel\_y;\\
+    」を「\\
+    assign pc\_next = jp\_sel\_y;\\
+  //  assign pc\_next = pc\_sel\_y;\\
+    」に変更した. これによりjp\_sel の出力 jp\_sel y の pc\_next への接続を行った.
+
+    \item 523行目から525行目, 記述「\\
+  //assign jp\_sel\_d0 = pc\_sel\_y;\\
+  //assign jp\_sel\_d1 = sh\_j\_y;\\
+  //assign jp\_sel\_s = jp;\\」を「\\
+    assign jp\_sel\_d0 = pc\_sel\_y;\\
+    assign jp\_sel\_d1 = sh\_j\_y;\\
+    assign jp\_sel\_s = jp;\\」に変更した. これにより, p\_sel の入力 jp\_sel\_d0, jp\_sel\_d1, jp\_sel\_s の接続を行った.
+\end{enumerate}
+\end{itemize}
+\subsubsubsection{main\_ctrl.vの変更}
+プロセッサのmain\_ctrl.vに以下の変更を加えることで, j命令の追加を行った.
+\begin{itemize}
+    \item j命令の変更
+\begin{enumerate}
+    \item 63行目, 記述「`define  J  6'bXXXXXX」「`define  J  6'b000010」に変更した. これにより, 命令コードの定義の変更を行った.
+    
+    \item 378行目, 記述「assign  jp = (((op\_code == `J) \&\& 0) $\parallel$
+    ((op\_code == `JAL) \&\& 0)) ? 1'b1 : 1'b0;」を「assign  jp = (((op\_code == `J) \&\& 1) $\parallel$ ((op\_code == `JAL) \&\& 0)) ? 1'b1 : 1'b0;」に変更した. これにより, jp\_sel モジュールへの制御信号の記述の変更を行った. 
+    \item 616行目, 記述「`J:      reg\_write\_enable\_tmp = 1'b1;」を「`J:      reg\_write\_enable\_tmp = 1'b0;」に変更した．これにより, レジスタファイルへの制御信号の記述の変更を行った.
+\end{enumerate}
+\end{itemize}
+\subsubsubsection{論理合成}
+次に, 変更を加えたmain\_ctrl.vをディレクトリmips\_de2-115/MIPSに置き, ディレクトリmips\_de2-115で以下のコマンドを入力して論理合成を行った.
+\begin{screen}
+quartus\_sh --flow compile DE2\_115\_Default
+\end{screen}
+これにより,  FPGA にダウンロード可能なプロ
+セッサなど回路一式のChannel Definition Format DE2 115 Default.cdf を得た.
+\subsubsubsection{FPGAを用いた回路実現}
+次に, FPGAをコンピュータに接続し, 端末に以下のように入力した.
+\begin{screen}
+dmesg \\
+quartus\_pmg DE2\_115\_Default.cdf
+\end{screen}
+1行目によって FPGA の接続を確認し，2行目によって FPGA にダウンロードを行った．\parその後, DE2-115 ボード上のKEY3を十数回押してプロセッサにクロックパルスを送り ディスプレイ下部に文字Bが繰り返し表示されるか確認した.
+\subsubsection{実験結果}
+\subsubsection{考察}
+
+\section{実験3: C クロスコンパイラを用いたマシン・コード生成}
+\subsection{目的・概要}
+本実験では, 実験 2-1, 2-2 で使用した MIPS マシン・コード print\_B\_while.bin が生成される，元となった C 言語のソース my\_print\_B while.c を作成する. 
+\subsubsection{実験手順}
+\subsubsubsection{print\_B.cの変更}
+実験1-1,1-2で使用したMIPS マシン・コード print\_B.bin が得られる C 言語のソース print\_B.c（ソースコード\ref{sec3}）にwhile(1)を追加しBを繰り返し表示するソースmy\_print\_B\_while.c(\ref{sec31})を作成した.print\_B.cのソースの1,2 行目は，それぞれ，プロセッサのデータメモリの 0x0300 番地と 0x0304 番地を指す define 文である．5 行目は，プロセッサのデータメモリの 0x0300 番地に0x00000000 を格納する記述である．6,7 行目は，それぞれ，プロセッサのデータメモリの 0x0304, 0x0300 番地に 0x00000002, 0x00000001 を格納する記述である．my\_print\_B\_while.Cではmain関数の中の処理をwhileで繰り返す様にしている.
+\begin{lstlisting}[caption=print\_B.c, label=sec3]
+#define EXTIO_PRINT_STROKE (*(volatile unsigned int *) 0x0300)
+#define EXTIO_PRINT_ASCII (*(volatile unsigned int *) 0x0304)
+main()
+{
+    EXTIO_PRINT_STROKE = (unsigned int)0x00000000;
+    EXTIO_PRINT_ASCII = (unsigned int)0x00000002;
+    EXTIO_PRINT_STROKE = (unsigned int)0x00000001;
+}
+\end{lstlisting}
+\begin{lstlisting}[caption=my\_print\_B\_while.c, label=sec31]
+#define EXTIO_PRINT_STROKE (*(volatile unsigned int *) 0x0300)
+#define EXTIO_PRINT_ASCII (*(volatile unsigned int *) 0x0304)
+main()
+{
+    while(1){
+        EXTIO_PRINT_STROKE = (unsigned int)0x00000000;
+        EXTIO_PRINT_ASCII = (unsigned int)0x00000002;
+        EXTIO_PRINT_STROKE = (unsigned int)0x00000001;
+    }
+}
+\end{lstlisting}
+\subsubsection{実験結果}
+\subsection{考察}
+
+\section{実験4: sltiu命令, bne命令, lw命令の追加}
+\subsection{実験4-1: マシン・コードの動作実験}
+\subsubsection{目的・概要}
+本実験では, 即値符号なし・セット・オン・レス・ザン命令（set on
+less than immediate unsigned：sltiu）とブランチ・ノット・イコール命令（branch on not
+equal：bne），ロード・ワード命令（load word：lw）が未実装なプロセッサにおいて, それらの命令を含んだ,ディスプレイに文字を複数表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを観察する.
+\subsubsection{実験手順}
+\subsubsubsection{クロスコンパイル}
+先ず初めにディスプレイに61種類の文字を表示するCソースprint\_all\_char.c(ソースコード)を用意した.print\_all\_char.cのソースの1,2 行目は，それぞれ，プロセッサのデータメモリの 0x0300 番地と 0x0304 番地を指す define 文である．5 行目は，変数k の方を宣言する文である. 6行目でfor文で扱う変数や終了条件と一ループ終了後のkの動作を定義する記述である.7行目はプロセッサのデータメモリの 0x0300 番地に0x00000000 を格納する記述である．8,9 行目は，それぞれ，プロセッサのデータメモリの 0x0304, 0x0300 番地に k, 0x00000001 を格納する記述である．
+\begin{lstlisting}[caption=print\_all\_char.c, label=sec4]
+#define EXTIO_PRINT_STROKE (*(volatile unsigned int *) 0x0300)
+#define EXTIO_PRINT_ASCII (*(volatile unsigned int *) 0x0304)
+main()
+{
+    unsigned int k;
+    for (k = 0; k <= 60; k++) {
+        EXTIO_PRINT_STROKE = (unsigned int)0x00000000;
+        EXTIO_PRINT_ASCII = k;
+        EXTIO_PRINT_STROKE = (unsigned int)0x00000001;
+    }
+}
+\end{lstlisting}
+次のコマンドを入力しprint\_all\_char.cからMIPSマシン・コードを作成した.
+\begin{screen}
+cross\_compile.sh print\_all\_char.c
+\end{screen}
+これにより, MIPSマシン・コードprint\_all\_char.binを得た.
+\subsubsubsection{メモリイメージファイルの作成}
+次のコマンドを入力し, 作成したMIPSマシン・コードをプロセッサの命令メモリのメモリ・イメージファイルに変換した.
+\begin{screen}
+bin2v print\_all\_char.bin
+\end{screen}
+これにより quartusIIで論理合成可能なメモリ・イメージファイル(rom8x1024\_sim.v, rom8x1024\_DE2.mif)を得た. 
+\subsubsubsection{命令メモリに格納される命令列の確認及び予想}
+次に, bin2vにより生成されたメモリイメージファイルを使用し, プロセッサの命令メモリに格納される命令列を確認した. ソースコード\ref{sec4-1rom}はrom8x1024 sim.v の一部である. これを解析し, 以下の問いを立てた. 
+\begin{enumerate}
+    \item プロセッサが最初にPC=0x0074番地の命令を実行した直後のレジスタ2番目の値はなにか．
+    
+    \item プロセッサが最初にPC=0x0078番地の命令を実行した直後のPCの値はなにか.
+\end{enumerate}
+\begin{lstlisting}[caption=実験4-1で生成されたrom8x1024\_sim.v,label=sec4-1rom]
+<Omission>
+case (word_addr)
+    <Omission>
+        10’h00b: data = 32’hafc00000; // 0040002c: SW, RAM[REG[30]+0]<=REG[0];ここが PC=0x002c の命令
+        10’h00c: data = 32’h0810001b; // 00400030: J, PC<=0x0010001b*4(=0x0040006c);
+        10’h00d: data = 32’h00000000; // 00400034: SLL, REG[0]<=REG[0]<<0;
+        10’h00e: data = 32’h24020300; // 00400038: ADDIU, REG[2]<=REG[0]+768(=0x00000300);
+        10’h00f: data = 32’hac400000; // 0040003c: SW, RAM[REG[2]+0]<=REG[0];
+        10’h010: data = 32’h24030304; // 00400040: ADDIU, REG[3]<=REG[0]+772(=0x00000304);
+        10’h011: data = 32’h8fc20000; // 00400044: LW, REG[2]<=RAM[REG[30]+0];   ここが 命令メモリ 0x011 の命令
+        10’h012: data = 32’h00000000; // 00400048: SLL, REG[0]<=REG[0]<<0;
+        10’h013: data = 32’hac620000; // 0040004c: SW, RAM[REG[3]+0]<=REG[2];
+        10’h014: data = 32’h24030300; // 00400050: ADDIU, REG[3]<=REG[0]+768(=0x00000300);
+        10’h015: data = 32’h24020001; // 00400054: ADDIU, REG[2]<=REG[0]+1(=0x00000001);
+        10’h016: data = 32’hac620000; // 00400058: SW, RAM[REG[3]+0]<=REG[2];
+        10’h017: data = 32’h8fc20000; // 0040005c: LW, REG[2]<=RAM[REG[30]+0];
+        10’h018: data = 32’h00000000; // 00400060: SLL, REG[0]<=REG[0]<<0;
+        10’h019: data = 32’h24420001; // 00400064: ADDIU, REG[2]<=REG[2]+1(=0x00000001);
+        10’h01a: data = 32’hafc20000; // 00400068: SW, RAM[REG[30]+0]<=REG[2];
+        10’h01b: data = 32’h8fc20000; // 0040006c: LW, REG[2]<=RAM[REG[30]+0];
+        10’h01c: data = 32’h00000000; // 00400070: SLL, REG[0]<=REG[0]<<0;
+        10’h01d: data = 32’h2c42003d; // 00400074: SLTIU, REG[2]<=(REG[2]<61(=0x0000003d))?1:0;     こ こ が 命 令 メ モ
+    リ 0x01d の命令
+        10’h01e: data = 32’h1440ffef; // 00400078: BNE, PC<=(REG[2] != REG[0])?PC+4+65519*4:PC+4;
+    <Omission>
+endcase
+<Omission>
+\end{lstlisting}
+\subsubsubsection{論理合成}
+次に, メモリ・イメージファイルrom8x1024\_DE2.mifをディレクトリmips\_de2-115にコピーし, ディレクトリmips\_de2-115で以下のコマンドを入力して論理合成を行った.
+\begin{screen}
+quartus\_sh --flow compile DE2\_115\_Default
+\end{screen}
+これにより,  FPGA にダウンロード可能なプロセッサなど回路一式のChannel Definition Format DE2 115 Default.cdf を得た.
+\subsubsubsection{FPGAを用いた回路実現}
+次に, FPGAをコンピュータに接続し, 端末に以下のように入力した.
+\begin{screen}
+dmesg \\
+quartus\_pmg DE2\_115\_Default.cdf
+\end{screen}
+1行目によって FPGA の接続を確認し，2行目によって FPGA にダウンロードを行った．
+その後, DE2-115 ボード上のKEY3を30回程度押してプロセッサにクロックパルスを送りディスプレイ下部に文字に文字が表示されるか確認した. 
+\subsubsection{実験予想}
+\begin{enumerate}
+    \item プロセッサが最初にPC=0x0074番地の命令を実行した直後のレジスタ2番目の値はなにか．\par
+    実行直後のレジスタ2番地にはreg[2]=0なのでreg[2]<61より, 1が代入される
+    \item プロセッサが最初にPC=0x0078番地の命令を実行した直後のPCの値はなにか. \par
+    PC + (1-17)*4) = 0x0038 = PCとなる. これはPCが4*4=16ビットで表されていて, 65519をたすとオーバーフローを起こして上位の桁がなくなるためこの値になる
+\end{enumerate}
+\subsubsection{実験結果}
+\subsubsection{考察}
+\subsection{実験4-2: プロセッサの追加設計}
+\subsubsection{目的・概要}
+本実験では, 即値符号なし・セット・オン・レス・ザン命令（set on
+less than immediate unsigned：sltiu）とブランチ・ノット・イコール命令（branch on not
+equal：bne），ロード・ワード命令（load word：lw）が未実装なプロセッサにおいて, これらを追加設計し,ディスプレイに文字を複数表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを観察する.
+\subsubsection{実験手順}
+\subsubsubsection{main\_ctrl.vの変更}
+プロセッサのmain\_ctrl.vに以下の変更を加えることで, sltiu, bne, lw命令の追加を行った.
+\begin{itemize}
+    \item sltiu命令の変更
+\begin{enumerate}
+    \item 79行目, 記述「`define   SLTIU 6'b001100」「`define   SLTIU 6'b001011」に変更した. これにより命令コードの定義の変更を行った.
+    
+    \item 355行目, 記述「`SLTIU:  is\_branch\_ctrl\_tmp = 3'bXXX;」を「`SLTIU:  is\_branch\_ctrl\_tmp = 3'b110;」に変更した. これにより, is\_branch モジュールへの制御信号の記述の変更を行った.
+    
+    \item 455行目, 記述「`SLTIU:  alu\_b\_sel1\_s\_tmp = 1'bX;」を「`SLTIU:  alu\_b\_sel1\_s\_tmp = 1'b1;」に変更した．これにより, ALU の入力ポート B へ流すデータを選択するセレクト信号の記述の変更を行った.
+    
+    \item 547行目, 記述「`SLTIU:  alu\_op\_tmp = 3'bXXX;」を「`SLTIU:  alu\_op\_tmp = 3'b111;」に変更した. これにより加算を行う制御信号にSLTIU の追加を行った.
+    
+    \item 633行目, 記述「`SLTIU:  reg\_write\_enable\_tmp = 1'b0;」を「`SLTIU:  reg\_write\_enable\_tmp = 1'b1;」に変更した. これによりレジスタファイルへの制御信号の記述の変更を行った.
+    
+    \item 676行目, 記述「`SLTIU:  alu\_ram\_sel\_s\_tmp = 1'bX;」を「`SLTIU:  alu\_ram\_sel\_s\_tmp = 1'b0;」に変更した. これによりレジスタファイルの方へ流すデータを選択するセレクト信号の記述の変更を行った.
+    
+    \item 719行目, 記述「`SLTIU:  reg\_widx\_sel1\_s\_tmp = 1'bX;」を「`SLTIU:  reg\_widx\_sel1\_s\_tmp = 1'b0;」に変更した. これによりレジスタファイルの write\_idx の方へ流すデータを選択するセレクト信号の記述の変更を行った.
+    
+    \item 782行目, 記述「`SLTIU:  link\_tmp = 1'bX;」を「`SLTIU:  link\_tmp = 1'b0;」に変更した. これによりレジスタファイルの write\_idx へ流すデータを選択するセレクト信号の記述の変更を行った.
+\end{enumerate}
+    \item bne命令の変更
+\begin{enumerate}
+    \item 50行目, 記述「 `define    BNE  6'b001100」を「 `define    BNE  6'b000101」に変更した. これにより命令コードの定義の変更を行った.
+    
+    \item 340行目, 記述「`BNE:    is\_branch\_ctrl\_tmp = 3'bXXX;」を「`BNE:    is\_branch\_ctrl\_tmp = 3'b001;」に変更した. これによりis\_branch モジュールへの制御信号の記述の変更を行った.
+    
+    \item 445行目, 記述「`BNE:    alu\_b\_sel1\_s\_tmp = 1'bX;」を「`BNE:    alu\_b\_sel1\_s\_tmp = 1'b0;」に変更した. これによりALU の入力ポート B へ流すデータを選択するセレクト信号の記述の変更を行った.
+    
+    \item 494行目, 記述「((op\_code == `BNE) && 0)」を「((op\_code == `BNE) \&\& 1)」に変更した. これにより符号拡張を行う制御信号の記述の変更を行った.
+    
+    \item 608行目, 記述「`BNE:    reg\_write\_enable\_tmp = 1'bX;」を「`BNE:    reg\_write\_enable\_tmp = 1'b0;」に変更した. これによりレジスタファイルへの制御信号の記述の変更を行った.
+\end{enumerate}
+    \item lw命令の変更
+\begin{enumerate}
+    \item 25行目, 記述「`define     LW  6'b001100」を「`define     LW  6'b100011」に変更した. これにより命令コードの定義の変更を行った.
+    
+    \item 314行目, 記述「`LW:     is\_branch\_ctrl\_tmp = 3'bXXX;」を「`LW:     is\_branch\_ctrl\_tmp = 3'b110;」に変更した. これによりis\_branch モジュールへの制御信号の記述の変更を行った.
+    
+    \item 419行目, 記述「`LW:     alu\_b\_sel1\_s\_tmp = 1'bX;」を「`LW:     alu\_b\_sel1\_s\_tmp = 1'b1;」に変更した. これによりALU の入力ポート B へ流すデータを選択するセレクト信号の記述の変更を行った.
+    
+    \item 520行目, 記述「`LW:     alu\_op\_tmp = 3'bXXX;」を「`LW:     alu\_op\_tmp = 3'b000;」に変更した. これにより加算を行う制御信号の記述の変更を行った.
+    
+    \item 582行目, 記述「`LW:     reg\_write\_enable\_tmp = 1'bX;」を「`LW:     reg\_write\_enable\_tmp = 1'b1;」に変更した. これによりレジスタファイルへの制御信号の記述の変更を行った.
+    
+    \item 655行目, 記述「`LW:     alu\_ram\_sel\_s\_tmp = 1'bX;」を「`LW:     alu\_ram\_sel\_s\_tmp = 1'b1;」に変更した. これによりレジスタファイルの方へ流すデータを選択するセレクト信号の記述の変更を行った.
+    
+    \item 698行目, 記述「`LW:     reg\_widx\_sel1\_s\_tmp = 1'bX;」を「`LW:     reg\_widx\_sel1\_s\_tmp = 1'b0;」に変更した. レジスタファイルの write\_idx の方へ流すデータを選択するセレクト信号の記述の変更を行った.
+    
+    \item 747行目, 記述「`LW:     link\_tmp = 1'bX;」を「`LW:     link\_tmp = 1'b0;」に変更した. これによりレジスタファイルの write\_idx へ流すデータを選択するセレクト信号の記述の変更を行った.
+\end{enumerate}
+\end{itemize}
+\subsubsubsection{論理合成}
+次に, 変更を加えたmain\_ctrl.vをディレクトリmips\_de2-115/MIPSに置き, ディレクトリmips\_de2-115で以下のコマンドを入力して論理合成を行った.
+\begin{screen}
+quartus\_sh --flow compile DE2\_115\_Default
+\end{screen}
+これにより,  FPGA にダウンロード可能なプロ
+セッサなど回路一式のChannel Definition Format DE2 115 Default.cdf を得た.
+\subsubsubsection{FPGAを用いた回路実現}
+次に, FPGAをコンピュータに接続し, 端末に以下のように入力した.
+\begin{screen}
+dmesg \\
+quartus\_pmg DE2\_115\_Default.cdf
+\end{screen}
+1行目によって FPGA の接続を確認し，2行目によって FPGA にダウンロードを行った．\parその後, DE2-115 ボード上のKEY3を60回程度押してプロセッサにクロックパルスを送り ディスプレイ下部に文字列が2つ表示されるか確認した.
+\subsubsection{実験結果}
+\subsubsection{考察}
+
+\section{実験5: jal命令の追加}
+\subsection{実験5-1: マシン・コードの動作実験}
+\subsubsection{目的・概要}
+本実験では, ジャンプ・アンド・リンク命令（jump and link：jal）が未実装なプロセッサにおいて, それらの命令を含んだ,ディスプレイに文字を複数表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを観察する.
+\subsubsection{実験手順}
+\subsubsubsection{クロスコンパイル}
+先ず初めにディスプレイに文字列を表示するCソースmy\_print.c(ソースコード\ref{sec5})を用意した. my\_printの関数は文字列stringを表示する関数ある.
+\begin{lstlisting}[caption=mt\_print.c, label=sec5]
+#define EXTIO_PRINT_STROKE (*(volatile unsigned int *) 0x0300)
+#define EXTIO_PRINT_ASCII (*(volatile unsigned int *) 0x0304)
+
+void my_print();
+
+main()
+{
+    unsigned int string[64];
+    string[0] = ’H’;
+    string[1] = ’E’;
+    string[2] = ’L’;
+    string[3] = ’L’;
+    string[4] = ’O’;
+    string[5] = ’!’;
+    string[6] = ’!’;
+    string[7] = ’\0’;
+    my_print(string);
+    string[0] = ’B’;
+    string[1] = ’\0’;
+}
+
+void my_print(str)
+    unsigned int *str;
+{
+    while (*str != ’\0’) {
+        EXTIO_PRINT_STROKE = (unsigned int)0x00000000;
+        if ((*str >= ’A’) && (*str <= ’Z’)) {
+        EXTIO_PRINT_ASCII = *str - ’A’ + 1;
+        } else if ((*str >= ’a’) && (*str <= ’z’)) {
+        EXTIO_PRINT_ASCII = *str - ’a’ + 1;
+        } else if ((*str >= ’0’) && (*str <= ’9’)) {
+        EXTIO_PRINT_ASCII = *str - ’0’ + 48;
+        } else {
+            if (*str == ’@’) {
+        EXTIO_PRINT_ASCII = (unsigned int)0;
+            } else if (*str == ’[’) {
+        EXTIO_PRINT_ASCII = (unsigned int)27;
+            } else if (*str == ’]’) {
+        EXTIO_PRINT_ASCII = (unsigned int)29;
+            } else if ((*str >= ’ ’) && (*str <= ’/’)) {
+        EXTIO_PRINT_ASCII = *str - ’ ’ + 32;
+            } else if (*str == ’?’) {
+        EXTIO_PRINT_ASCII = (unsigned int)58;
+            } else if (*str == ’=’) {
+        EXTIO_PRINT_ASCII = (unsigned int)59;
+            } else if (*str == ’;’) {
+        EXTIO_PRINT_ASCII = (unsigned int)60;
+            } else if (*str == ’:’) {
+        EXTIO_PRINT_ASCII = (unsigned int)61;
+            } else {
+        EXTIO_PRINT_ASCII = (unsigned int)0x00000000;
+            }
+        }
+        EXTIO_PRINT_STROKE = (unsigned int)0x00000001;
+        str++;
+    }
+}
+\end{lstlisting}
+次のコマンドを入力しmy\_print.cからMIPSマシン・コードを作成した.
+\begin{screen}
+cross\_compile.sh my\_print.c
+\end{screen}
+これにより, MIPSマシン・コードmy\_print.binを得た.
+\subsubsubsection{メモリイメージファイルの作成}
+次のコマンドを入力し, 作成したMIPSマシン・コードをプロセッサの命令メモリのメモリ・イメージファイルに変換した.
+\begin{screen}
+bin2v my\_print.bin
+\end{screen}
+これにより quartusIIで論理合成可能なメモリ・イメージファイル(rom8x1024\_sim.v, rom8x1024\_DE2.mif)を得た. 
+\subsubsubsection{命令メモリに格納される命令列の確認及び予想}
+次に, bin2vにより生成されたメモリイメージファイルを使用し, プロセッサの命令メモリに格納される命令列を確認した. ソースコード\ref{sec5-1rom}はrom8x1024 sim.v の一部である. これを解析し, 以下の問いを立てた. 
+\begin{enumerate}
+    \item プロセッサが最初に PC=0x0074 番地の命令を実行した直後のレジスタ 31 番目の値はなにか．
+    
+    \item プロセッサが最初にPC=0x0074番地の命令を実行した直後のPCの値はなにか.
+\end{enumerate}
+\begin{lstlisting}[caption=実験5-1で生成されたrom8x1024\_sim.v,label=sec5-1rom]
+<Omission>
+case (word_addr)
+    <Omission>
+        10’h00b: data = 32’h03a0f021; // 0040002c: ADDU, REG[30]<=REG[29]+REG[0]; 
+        10’h00c: data = 32’h24020048; // 00400030: ADDIU, REG[2]<=REG[0]+72(=0x00000048);
+        10’h00d: data = 32’hafc20010; // 00400034: SW, RAM[REG[30]+16]<=REG[2];
+        10’h00e: data = 32’h24020045; // 00400038: ADDIU, REG[2]<=REG[0]+69(=0x00000045);
+        10’h00f: data = 32’hafc20014; // 0040003c: SW, RAM[REG[30]+20]<=REG[2];
+        10’h010: data = 32’h2402004c; // 00400040: ADDIU, REG[2]<=REG[0]+76(=0x0000004c);
+        10’h011: data = 32’hafc20018; // 00400044: SW, RAM[REG[30]+24]<=REG[2];
+        10’h012: data = 32’h2402004c; // 00400048: ADDIU, REG[2]<=REG[0]+76(=0x0000004c);
+        10’h013: data = 32’hafc2001c; // 0040004c: SW, RAM[REG[30]+28]<=REG[2];
+        10’h014: data = 32’h2402004f; // 00400050: ADDIU, REG[2]<=REG[0]+79(=0x0000004f);
+        10’h015: data = 32’hafc20020; // 00400054: SW, RAM[REG[30]+32]<=REG[2];
+        10’h016: data = 32’h24020021; // 00400058: ADDIU, REG[2]<=REG[0]+33(=0x00000021);
+        10’h017: data = 32’hafc20024; // 0040005c: SW, RAM[REG[30]+36]<=REG[2];
+        10’h018: data = 32’h24020021; // 00400060: ADDIU, REG[2]<=REG[0]+33(=0x00000021);
+        10’h019: data = 32’hafc20028; // 00400064: SW, RAM[REG[30]+40]<=REG[2];
+        10’h01a: data = 32’hafc0002c; // 00400068: SW, RAM[REG[30]+44]<=REG[0];
+        10’h01b: data = 32’h27c20010; // 0040006c: ADDIU, REG[2]<=REG[30]+16(=0x00000010);
+        10’h01c: data = 32’h00402021; // 00400070: ADDU, REG[4]<=REG[2]+REG[0];
+        10’h01d: data = 32’h0c100028; // 00400074: JAL, PC<=0x00100028*4(=0x004000a0);  REG[31]<=PC+4 
+    <Omission>
+endcase
+<Omission>
+\end{lstlisting}
+\subsubsubsection{論理合成}
+次に, メモリ・イメージファイルrom8x1024\_DE2.mifをディレクトリmips\_de2-115にコピーし, ディレクトリmips\_de2-115で以下のコマンドを入力して論理合成を行った.
+\begin{screen}
+quartus\_sh --flow compile DE2\_115\_Default
+\end{screen}
+これにより,  FPGA にダウンロード可能なプロセッサなど回路一式のChannel Definition Format DE2 115 Default.cdf を得た.
+\subsubsubsection{FPGAを用いた回路実現}
+次に, FPGAをコンピュータに接続し, 端末に以下のように入力した.
+\begin{screen}
+dmesg \\
+quartus\_pmg DE2\_115\_Default.cdf
+\end{screen}
+1行目によって FPGA の接続を確認し，2行目によって FPGA にダウンロードを行った．
+その後, DE2-115 ボード上のKEY3を70 個程度の命令を実行させ，ディスプレイ下部に文字列 "HELLO!!"の一部が表示されるかどうか確認した. 
+\subsubsection{実験予想}
+\begin{enumerate}
+    \item プロセッサが最初に PC=0x0074 番地の命令を実行した直後のレジスタ 31 番目の値はなにか．\par
+    JAL命令では現在のPC+4の値がレジスタ31番に書き込まれるため, 400078が格納される.
+    \item プロセッサが最初にPC=0x0074番地の命令を実行した直後のPCの値はなにか.\par
+    4000a0になると考えられる.
+\end{enumerate}
+\subsubsection{実験結果}
+\subsubsection{考察}
+\subsection{実験5-2: プロセッサの追加設計}
+\subsubsection{目的・概要}
+本実験では, ジャンプ・アンド・リンク命令（jump and link：jal）が未実装なプロセッサにおいて, これらを追加設計し,ディスプレイに文字を複数表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを観察する.
+\subsubsection{実験手順}
+\subsubsubsection{main\_ctrl.vの変更}
+プロセッサのmain\_ctrl.vに以下の変更を加えることで, jal命令の追加を行った.
+\begin{itemize}
+    \item jal命令の変更
+\begin{enumerate}
+    \item 378行目, 記述「assign  jp = (((op\_code == `J) \&\& 1) || ((op\_code == `JAL) \&\& 0) ? 1'b1 : 1'b0;」を「assign  jp = (((op\_code == `J) && 1) || ((op\_code == `JAL) && 1)) ? 1'b1 : 1'b0;」に変更した. これによりjp\_sel モジュールへの制御信号の記述の変更を行った.
+    
+    \item 624行目, 記述「`JAL:    reg\_write\_enable\_tmp = 1'b0;」を「`JAL:    reg\_write\_enable\_tmp = 1'b1;」に変更した．これによりレジスタファイルへの制御信号の記述の変更を行った.
+    
+    \item 773行目, 記述「`JAL:    link\_tmp = 1'b0;」を「`JAL:    link\_tmp = 1'b1;」に変更した. これによりレジスタファイルの write\_idx へ流すデータを選択するセレクト信号の記述の変更を行った.
+\end{enumerate}
+\end{itemize}
+\subsubsubsection{論理合成}
+次に, 変更を加えたmain\_ctrl.vをディレクトリmips\_de2-115/MIPSに置き, ディレクトリmips\_de2-115で以下のコマンドを入力して論理合成を行った.
+\begin{screen}
+quartus\_sh --flow compile DE2\_115\_Default
+\end{screen}
+これにより,  FPGA にダウンロード可能なプロ
+セッサなど回路一式のChannel Definition Format DE2 115 Default.cdf を得た.
+\subsubsubsection{FPGAを用いた回路実現}
+次に, FPGAをコンピュータに接続し, 端末に以下のように入力した.
+\begin{screen}
+dmesg \\
+quartus\_pmg DE2\_115\_Default.cdf
+\end{screen}
+1行目によって FPGA の接続を確認し，2行目によって FPGA にダウンロードを行った．\parその後, DE2-115 ボード上のKEY3を70 個程度の命令を実行させ，ディスプレイ下部に文字列 "HELLO!!"の一部が表示されるかどうか確認した. 
+\subsubsection{実験結果}
+\subsubsection{考察}
+
+\section{実験6: jr命令の追加}
+\subsection{実験6-1: マシン・コードの動作実験}
+\subsubsection{目的・概要}
+本実験では, ジャンプ・レジスタ命令（jump register：jr）が未実装なプロセッサにおいて, それらの命令を含んだ,ディスプレイに文字を複数表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを観察する.
+\subsubsection{実験手順}
+\subsubsection{実験結果}
+\subsubsection{考察}
+\subsection{実験6-2: プロセッサの追加設計}
+\subsubsection{目的・概要}
+本実験では, ジャンプ・レジスタ命令（jump register：jr）が未実装なプロセッサにおいて, これらを追加設計し,ディスプレイに文字を複数表示する MIPS マシン・コードをFPGA を搭載した実験基板上で実行し, どのような動作をするかを観察する.
+\subsubsection{実験手順}
+\subsubsection{実験結果}
+\subsubsection{考察}
+
+\section{実験7: 素数計算}
+\subsection{目的・概要}
+本実験では, 3 から「キーボードから入力された数」までの数のうち，素数であるもののみをディスプレイに次々と表示する処理を，C プログラムと実験 6-2 で完成させたプロセッサにより実現し, FPGA を搭載した実験基板上で実行して, どのような動作をするかを観察する.
+\subsection{実験手順}
+\subsection{実験結果}
+\subsection{考察}
+
+\section{実験8: ステッピングモータの制御}
+\subsection{目的・概要}
+本実験では, キーボードからステッピングモーターを制御する処理を，C プログラムと実験
+6-2 で完成させたプロセッサにより実現し, FPGA を搭載した実験基板上で実行して, どのような動作をするかを観察する.
+\subsection{実験手順}
+\subsection{実験結果}
+\subsection{考察}
+
+\section{実験9: 整数乗算命令 mult の追加}
+\subsection{目的・概要}
+本実験では, 整数乗算命令mult, ならびにムーブ・フロム・Lo 命令mfloのためのbin2vの拡張とプロセッサ（cpu.v,main ctrl.v,alu\_ctrler.v）の拡張を行う. 
+\subsection{実験手順}
+\subsection{実験結果}
+\subsection{考察}
+
+\section{実験10: 符号なし除算命令 divu の追加}
+\subsection{目的・概要}
+本実験では, 符号なし除算命令 divu、ならびにムーブ・フロム・Hi 命令 mfhi のための bin2v
+の拡張とプロセッサ（cpu.v,main ctrl.v,alu ctrler.v）の拡張を行う.
+\subsection{実験手順}
+\subsection{実験結果}
+\subsection{考察}
+
+
+\section{まとめ}
+本実験では, EDA ツールを用いたディジタル LSI の設計を行った. 実験の結果,論理回路のシミュレーションには入力するパターン数に応じて全パターンためしてもよいことや組み合わせ回路と順序回路のそれぞれの特徴, 論理回路における最適化後のオートマトンの状態遷移についてが明らかになった. 
+
+\section{使用したソースコード}
+\subsection{実験前の作成コード}
+\lstinputlisting[caption=cpu.v, label=sec1:cpu.v]{first/cpu.v}
+\lstinputlisting[caption=main\_ctrl.v, label=sec1:mainctrl.v]{first/main_ctrl.v}
+\lstinputlisting[caption=alu.v, label=sec1:falu.v]{first/alu.v}
+\lstinputlisting[caption=alu\_ctrler.v, label=sec1:aluctrler.v]{first/alu_ctrler.v}
+\subsection{実験10終了後の作成コード}
+\lstinputlisting[caption=cpu.v, label=sec2:cpu.v]{final/cpu.v}
+\lstinputlisting[caption=main\_ctrl.v, label=sec2:mainctrl.v]{final/main_ctrl.v}
+\lstinputlisting[caption=alu.v, label=sec2:alu.v]{final/alu.v}
+\lstinputlisting[caption=alu\_ctrler.v, label=sec2:aluctrler.v]{final/alu_ctrler.v}
+\section{参考文献}
+\begin{thebibliography}{100}
+\bibitem{}\url{}
+\end{thebibliography}
+\end{document}

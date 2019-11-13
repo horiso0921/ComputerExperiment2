@@ -1,0 +1,44 @@
+m255
+K3
+13
+cModel Technology
+Z0 d/mdhome/home5/nw0397095/ComputerExperiment2/mux21
+vmux21
+!i10b 1
+Z1 !s100 >Eb[_MX_MHNRD2kzJQU@D3
+Z2 INS[:YQ:Rl2nodAYX3D=3d2
+Z3 Vah]=dDAfVo]iK]_=`lBC42
+Z4 d/mdhome/home5/nw0397095/ComputerExperiment2/mux21
+Z5 w1570682559
+Z6 Fmux21.v
+Z7 8test_mux21.v
+Z8 Ftest_mux21.v
+L0 7
+Z9 OV;L;10.1d;51
+r1
+!s85 0
+31
+Z10 !s108 1570683035.830290
+Z11 !s107 mux21.v|test_mux21.v|
+Z12 !s90 -reportprogress|300|test_mux21.v|
+!s101 -O0
+o-O0
+vtest
+!i10b 1
+Z13 !s100 9>Z_zT`dgn?hJ@V9flQ3;0
+Z14 IC2MaAEH_5f<aIDHXd[>Bn1
+Z15 Vk<3<[f=78GX=_HO53D;7>3
+R4
+R5
+R7
+R8
+L0 9
+R9
+r1
+!s85 0
+31
+R10
+R11
+R12
+!s101 -O0
+o-O0

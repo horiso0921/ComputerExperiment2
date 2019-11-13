@@ -1,0 +1,18 @@
+# OpenFile test_adder16s.v 
+vlog test_adder16s.v
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module adder16s
+# -- Compiling module test
+# 
+# Top level modules:
+# 	test
+vsim test
+# vsim test 
+# Loading work.test
+# Loading work.adder16s
+view wave
+# .main_pane.wave.interior.cs.body.pw.wf
+add wave :
+# Unrecognized dataset prefix: 
+add wave *
+run 50ns

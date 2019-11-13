@@ -1,0 +1,25 @@
+# OpenFile test_bcd2.v 
+vlib work
+# ** Warning: (vlib-34) Library already exists at "work".
+vlog test_bcd2.vt
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# ** Error: (vlog-7) Failed to open design unit file "test_bcd2.vt" in read mode.
+# No such file or directory. (errno = ENOENT)
+# /pub1/jikken/eda3/altera/13.0sp1/modelsim_ase/linux/vlog failed.
+vlog test_bcd2.v
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module bcd1
+# -- Compiling module bcd2
+# -- Compiling module test
+# 
+# Top level modules:
+# 	test
+vsim test
+# vsim test 
+# Loading work.test
+# Loading work.bcd2
+# Loading work.bcd1
+view wave
+# .main_pane.wave.interior.cs.body.pw.wf
+add wave *
+run 2000ns

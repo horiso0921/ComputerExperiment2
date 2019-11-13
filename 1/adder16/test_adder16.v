@@ -1,0 +1,29 @@
+/*                              *
+ * test_adder16.v               *
+ * 16 ビット加算回路のテストベンチ *
+ *                              */
+
+`timescale 1ns / 1ns    // シミュレーションの単位時間 / 精度
+                        // 1 ns = 1/1000000000 sec
+`include "adder16.v"    // adder16.v の取り込み
+
+module test;
+    reg [15:0] x, y;
+    reg cin;
+    wire [15:0] sum;
+    wire cout;
+
+    adder16 adder16a(x, y, cin, sum, cout);
+    
+    always begin
+        #10 x = x + 100;
+    end
+    
+    always begin
+        #5 y = y + 300;
+    end
+    
+    initial begin
+        x = 0 ; y = 0 ; cin = 1;
+    end
+endmodule 

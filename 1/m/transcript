@@ -1,0 +1,23 @@
+# OpenFile test_m.v 
+vlib test_m.v
+# ** Error: (vlib-35) Failed to create directory "test_m.v".
+# File exists. (errno = EEXIST)
+vlog test_m.v
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module m
+# -- Compiling module test
+# 
+# Top level modules:
+# 	test
+vsim test
+# vsim test 
+# Loading work.test
+# Loading work.m
+view wave
+# .main_pane.wave.interior.cs.body.pw.wf
+add wave
+# wrong number of args for "add wave".
+# Usage: add wave [-allowconstants] [-clampanalog [0|1]] [-color <standard_color_name>] [-depth <level>] [-divider <divider_name>...] [-expand <signal_name>] [-<format>] [-group <group_name> [<sig_name1>...]] [-height <pixels>] [[-in] [-out] [-inout] | [-ports]] [-internal] [-label <name>] [-max <real_num>] [-min <real_num>] [-noupdate] [-position] [-radix <type> | <radix_type>] [-radixenumnumeric | -radixenumsymbolic] [-recursive] [-time] [<object_name>...] [{<object_name> {sig1 sig2 sig3 ...}}] 
+add wave *
+run 200ns
+run 200
