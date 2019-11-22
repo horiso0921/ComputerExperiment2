@@ -1,5 +1,5 @@
 Flow report for DE2_115_Default
-Fri Oct 25 15:19:40 2019
+Mon Nov 18 15:47:55 2019
 Quartus II 32-bit Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Web Edition
 
 
@@ -40,7 +40,7 @@ applicable agreement for further details.
 +--------------------------------------------------------------------------------------+
 ; Flow Summary                                                                         ;
 +------------------------------------+-------------------------------------------------+
-; Flow Status                        ; Successful - Fri Oct 25 15:19:20 2019           ;
+; Flow Status                        ; Successful - Mon Nov 18 15:47:33 2019           ;
 ; Quartus II 32-bit Version          ; 13.0.1 Build 232 06/12/2013 SP 1 SJ Web Edition ;
 ; Revision Name                      ; DE2_115_Default                                 ;
 ; Top-level Entity Name              ; DE2_115_Default                                 ;
@@ -64,7 +64,7 @@ applicable agreement for further details.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 10/25/2019 15:14:19 ;
+; Start date & time ; 11/18/2019 15:40:29 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; DE2_115_Default     ;
 +-------------------+---------------------+
@@ -75,7 +75,7 @@ applicable agreement for further details.
 +-------------------------------------+---------------------------------------------------------------------+---------------+-------------+----------------+
 ; Assignment Name                     ; Value                                                               ; Default Value ; Entity Name ; Section Id     ;
 +-------------------------------------+---------------------------------------------------------------------+---------------+-------------+----------------+
-; COMPILER_SIGNATURE_ID               ; 0.157198405915479                                                   ; --            ; --          ; --             ;
+; COMPILER_SIGNATURE_ID               ; 0.157405922922839                                                   ; --            ; --          ; --             ;
 ; MAX_CORE_JUNCTION_TEMP              ; 85                                                                  ; --            ; --          ; --             ;
 ; MIN_CORE_JUNCTION_TEMP              ; 0                                                                   ; --            ; --          ; --             ;
 ; MISC_FILE                           ; D:/Assignment/DE2_115_Default/DE2_115_Default.dpf                   ; --            ; --          ; --             ;
@@ -97,24 +97,24 @@ applicable agreement for further details.
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name               ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis      ; 00:00:27     ; 1.0                     ; 420 MB              ; 00:00:24                           ;
-; Fitter                    ; 00:04:21     ; 1.0                     ; 749 MB              ; 00:04:18                           ;
-; Assembler                 ; 00:00:06     ; 1.0                     ; 358 MB              ; 00:00:05                           ;
-; TimeQuest Timing Analyzer ; 00:00:19     ; 1.0                     ; 497 MB              ; 00:00:15                           ;
-; Total                     ; 00:05:13     ; --                      ; --                  ; 00:05:02                           ;
+; Analysis & Synthesis      ; 00:00:34     ; 1.0                     ; 420 MB              ; 00:00:28                           ;
+; Fitter                    ; 00:06:15     ; 1.0                     ; 735 MB              ; 00:06:11                           ;
+; Assembler                 ; 00:00:07     ; 1.0                     ; 366 MB              ; 00:00:06                           ;
+; TimeQuest Timing Analyzer ; 00:00:20     ; 1.0                     ; 491 MB              ; 00:00:17                           ;
+; Total                     ; 00:07:16     ; --                      ; --                  ; 00:07:02                           ;
 +---------------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
-+-----------------------------------------------------------------------------------------------------------+
-; Flow OS Summary                                                                                           ;
-+---------------------------+--------------------------------+--------------+--------------+----------------+
-; Module Name               ; Machine Hostname               ; OS Name      ; OS Version   ; Processor type ;
-+---------------------------+--------------------------------+--------------+--------------+----------------+
-; Analysis & Synthesis      ; iced11.ice.nuie.nagoya-u.ac.jp ; CentOS Linux ; CentOS Linux ; x86_64         ;
-; Fitter                    ; iced11.ice.nuie.nagoya-u.ac.jp ; CentOS Linux ; CentOS Linux ; x86_64         ;
-; Assembler                 ; iced11.ice.nuie.nagoya-u.ac.jp ; CentOS Linux ; CentOS Linux ; x86_64         ;
-; TimeQuest Timing Analyzer ; iced11.ice.nuie.nagoya-u.ac.jp ; CentOS Linux ; CentOS Linux ; x86_64         ;
-+---------------------------+--------------------------------+--------------+--------------+----------------+
++--------------------------------------------------------------------------------------------------------+
+; Flow OS Summary                                                                                        ;
++---------------------------+-----------------------------+--------------+--------------+----------------+
+; Module Name               ; Machine Hostname            ; OS Name      ; OS Version   ; Processor type ;
++---------------------------+-----------------------------+--------------+--------------+----------------+
+; Analysis & Synthesis      ; ssh.ice.nuie.nagoya-u.ac.jp ; CentOS Linux ; CentOS Linux ; x86_64         ;
+; Fitter                    ; ssh.ice.nuie.nagoya-u.ac.jp ; CentOS Linux ; CentOS Linux ; x86_64         ;
+; Assembler                 ; ssh.ice.nuie.nagoya-u.ac.jp ; CentOS Linux ; CentOS Linux ; x86_64         ;
+; TimeQuest Timing Analyzer ; ssh.ice.nuie.nagoya-u.ac.jp ; CentOS Linux ; CentOS Linux ; x86_64         ;
++---------------------------+-----------------------------+--------------+--------------+----------------+
 
 
 ------------

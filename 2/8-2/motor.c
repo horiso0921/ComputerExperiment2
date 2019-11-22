@@ -31,9 +31,9 @@ main() {
   my_print(str1);
 
   while (1) {	
-    /* "NUM=" を print */
-    str1[0] = 'N';  str1[1] = 'U';
-    str1[2] = 'M';  str1[3] = '=';
+    /* "STR=" を print */
+    str1[0] = 'S';  str1[1] = 'T';
+    str1[2] = 'R';  str1[3] = '=';
     str1[4] = '\0';
     my_print(str1);
     my_motor();
@@ -41,7 +41,7 @@ main() {
 }
  
 void my_motor() {
-  unsigned int str2[16], i;
+  unsigned int str2[16], i, str3[16];
   my_scan(str2);
   for(i = 0; i <= 256; i++){
     if (check(str2)){
@@ -49,7 +49,13 @@ void my_motor() {
     } else {
       rotateR();
     }
-  }  
+  }
+  str3[0] = 'E';
+  str3[1] = 'N';
+  str3[2] = 'D';
+  str3[3] = '\n';
+  str3[4] = '\0';
+  my_print(str3);
 }
 
 unsigned int check(str)

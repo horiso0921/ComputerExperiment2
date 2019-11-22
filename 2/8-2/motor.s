@@ -35,11 +35,11 @@ main:
 	nop
 
 $L2:
-	li	$2,78			# 0x4e
+	li	$2,83			# 0x53
 	sw	$2,16($fp)
-	li	$2,85			# 0x55
+	li	$2,84			# 0x54
 	sw	$2,20($fp)
-	li	$2,77			# 0x4d
+	li	$2,82			# 0x52
 	sw	$2,24($fp)
 	li	$2,61			# 0x3d
 	sw	$2,28($fp)
@@ -63,15 +63,15 @@ $L2:
 	.globl	my_motor
 	.ent	my_motor
 my_motor:
-	.frame	$fp,96,$31		# vars= 72, regs= 2/0, args= 16, gp= 0
+	.frame	$fp,160,$31		# vars= 136, regs= 2/0, args= 16, gp= 0
 	.mask	0xc0000000,-4
 	.fmask	0x00000000,0
 	.set	noreorder
 	.set	nomacro
 	
-	addiu	$sp,$sp,-96
-	sw	$31,92($sp)
-	sw	$fp,88($sp)
+	addiu	$sp,$sp,-160
+	sw	$31,156($sp)
+	sw	$fp,152($sp)
 	move	$fp,$sp
 	addiu	$2,$fp,20
 	move	$4,$2
@@ -89,10 +89,6 @@ $L6:
 	nop
 
 	beq	$2,$0,$L7
-	nop
-
-	lw	$4,16($fp)
-	jal	my_print
 	nop
 
 	jal	rotate
@@ -113,14 +109,28 @@ $L9:
 $L5:
 	lw	$2,16($fp)
 	nop
-	sltu	$2,$2,513
+	sltu	$2,$2,257
 	bne	$2,$0,$L6
 	nop
 
+	li	$2,69			# 0x45
+	sw	$2,84($fp)
+	li	$2,78			# 0x4e
+	sw	$2,88($fp)
+	li	$2,68			# 0x44
+	sw	$2,92($fp)
+	li	$2,10			# 0xa
+	sw	$2,96($fp)
+	sw	$0,100($fp)
+	addiu	$2,$fp,84
+	move	$4,$2
+	jal	my_print
+	nop
+
 	move	$sp,$fp
-	lw	$31,92($sp)
-	lw	$fp,88($sp)
-	addiu	$sp,$sp,96
+	lw	$31,156($sp)
+	lw	$fp,152($sp)
+	addiu	$sp,$sp,160
 	j	$31
 	nop
 

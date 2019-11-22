@@ -1,4 +1,6 @@
 # OpenFile test_cpu.v 
+vlib work
+# ** Warning: (vlib-34) Library already exists at "work".
 vlog test_cpu.v
 # Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
 # -- Compiling module rom8x1024_sim
@@ -38,10 +40,188 @@ vsim test_cpu
 # Loading work.shifter32_32_l2
 # Loading work.signext16_32
 # Loading work.is_branch
-# ** Warning: (vsim-3015) test_cpu.v(49): [PCDPC] - Port size (12 or 12) does not match connection size (8) for port 'o_pc'. The port definition is at: cpu.v(101).
+# ** Warning: (vsim-3015) test_cpu.v(49): [PCDPC] - Port size (12 or 12) does not match connection size (8) for port 'o_pc'. The port definition is at: cpu.v(102).
 #         Region: /test_cpu/cpua
 view wave
 # .main_pane.wave.interior.cs.body.pw.wf
 add wave *
-run 500ns
-run 50ns
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 1 times, errno 11
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 2 times, errno 11
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 3 times, errno 11
+# ** Error: Cannot lock WLF file: "vsim.wlf"
+#           errno 11: Resource temporarily unavailable.
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: nw0397095  Hostname: iced04.ice.nuie.nagoya-u.ac.jp  ProcessID: 7855
+#           Attempting to use alternate WLF file "./wlftkcbuf1".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlftkcbuf1
+run 10000
+vlib work
+# ** Warning: (vlib-34) Library already exists at "work".
+vlog test_cpu.v
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module rom8x1024_sim
+# -- Compiling module ram8x2048_sim
+# -- Compiling module alu
+# -- Compiling module pc
+# -- Compiling module registers
+# -- Compiling module plus4
+# -- Compiling module adder32
+# -- Compiling module mux32_32_32
+# -- Compiling module mux5_5_5
+# -- Compiling module main_ctrl
+# -- Compiling module alu_ctrler
+# -- Compiling module shifter32_32_l2
+# -- Compiling module signext16_32
+# -- Compiling module is_branch
+# -- Compiling module cpu
+# -- Compiling module test_cpu
+# 
+# Top level modules:
+# 	test_cpu
+vsim test_cpu
+# vsim test_cpu 
+# Loading work.test_cpu
+# Loading work.cpu
+# Loading work.rom8x1024_sim
+# Loading work.ram8x2048_sim
+# Loading work.alu
+# Loading work.pc
+# Loading work.registers
+# Loading work.plus4
+# Loading work.adder32
+# Loading work.mux32_32_32
+# Loading work.mux5_5_5
+# Loading work.main_ctrl
+# Loading work.alu_ctrler
+# Loading work.shifter32_32_l2
+# Loading work.signext16_32
+# Loading work.is_branch
+# ** Warning: (vsim-3015) test_cpu.v(49): [PCDPC] - Port size (12 or 12) does not match connection size (8) for port 'o_pc'. The port definition is at: cpu.v(102).
+#         Region: /test_cpu/cpua
+view wave
+# .main_pane.wave.interior.cs.body.pw.wf
+add wave *
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 1 times, errno 11
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 2 times, errno 11
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 3 times, errno 11
+# ** Error: Cannot lock WLF file: "vsim.wlf"
+#           errno 11: Resource temporarily unavailable.
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: nw0397095  Hostname: iced04.ice.nuie.nagoya-u.ac.jp  ProcessID: 7855
+#           Attempting to use alternate WLF file "./wlftjgjuCR".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlftjgjuCR
+run 1000
+vlib work
+# ** Warning: (vlib-34) Library already exists at "work".
+vlog test_cpu.v
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module rom8x1024_sim
+# -- Compiling module ram8x2048_sim
+# -- Compiling module alu
+# -- Compiling module pc
+# -- Compiling module registers
+# -- Compiling module plus4
+# -- Compiling module adder32
+# -- Compiling module mux32_32_32
+# -- Compiling module mux5_5_5
+# -- Compiling module main_ctrl
+# -- Compiling module alu_ctrler
+# -- Compiling module shifter32_32_l2
+# -- Compiling module signext16_32
+# -- Compiling module is_branch
+# -- Compiling module cpu
+# -- Compiling module test_cpu
+# 
+# Top level modules:
+# 	test_cpu
+vsim test_cpu
+# vsim test_cpu 
+# Loading work.test_cpu
+# Loading work.cpu
+# Loading work.rom8x1024_sim
+# Loading work.ram8x2048_sim
+# Loading work.alu
+# Loading work.pc
+# Loading work.registers
+# Loading work.plus4
+# Loading work.adder32
+# Loading work.mux32_32_32
+# Loading work.mux5_5_5
+# Loading work.main_ctrl
+# Loading work.alu_ctrler
+# Loading work.shifter32_32_l2
+# Loading work.signext16_32
+# Loading work.is_branch
+# ** Warning: (vsim-3015) test_cpu.v(49): [PCDPC] - Port size (12 or 12) does not match connection size (8) for port 'o_pc'. The port definition is at: cpu.v(102).
+#         Region: /test_cpu/cpua
+view wave
+# .main_pane.wave.interior.cs.body.pw.wf
+add wave *
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 1 times, errno 11
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 2 times, errno 11
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 3 times, errno 11
+# ** Error: Cannot lock WLF file: "vsim.wlf"
+#           errno 11: Resource temporarily unavailable.
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: nw0397095  Hostname: iced04.ice.nuie.nagoya-u.ac.jp  ProcessID: 7855
+#           Attempting to use alternate WLF file "./wlft9gwpOm".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlft9gwpOm
+run 2000
+vlib work
+# ** Warning: (vlib-34) Library already exists at "work".
+vlog test_cpu.v
+# Model Technology ModelSim ALTERA vlog 10.1d Compiler 2012.11 Nov  2 2012
+# -- Compiling module rom8x1024_sim
+# -- Compiling module ram8x2048_sim
+# -- Compiling module alu
+# -- Compiling module pc
+# -- Compiling module registers
+# -- Compiling module plus4
+# -- Compiling module adder32
+# -- Compiling module mux32_32_32
+# -- Compiling module mux5_5_5
+# -- Compiling module main_ctrl
+# -- Compiling module alu_ctrler
+# -- Compiling module shifter32_32_l2
+# -- Compiling module signext16_32
+# -- Compiling module is_branch
+# -- Compiling module cpu
+# -- Compiling module test_cpu
+# 
+# Top level modules:
+# 	test_cpu
+vsim test_cpu
+# vsim test_cpu 
+# Loading work.test_cpu
+# Loading work.cpu
+# Loading work.rom8x1024_sim
+# Loading work.ram8x2048_sim
+# Loading work.alu
+# Loading work.pc
+# Loading work.registers
+# Loading work.plus4
+# Loading work.adder32
+# Loading work.mux32_32_32
+# Loading work.mux5_5_5
+# Loading work.main_ctrl
+# Loading work.alu_ctrler
+# Loading work.shifter32_32_l2
+# Loading work.signext16_32
+# Loading work.is_branch
+view wave
+# .main_pane.wave.interior.cs.body.pw.wf
+add wave *
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 1 times, errno 11
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 2 times, errno 11
+# ** Error: Unable to lock WLF file "vsim.wlf". Retrying 3 times, errno 11
+# ** Error: Cannot lock WLF file: "vsim.wlf"
+#           errno 11: Resource temporarily unavailable.
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: nw0397095  Hostname: iced04.ice.nuie.nagoya-u.ac.jp  ProcessID: 7855
+#           Attempting to use alternate WLF file "./wlft0aO4FK".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlft0aO4FK
+run 1000ns
